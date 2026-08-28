@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CASSANOVA - Multi-Protocol Converter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #09172e 0%, #12284c 50%, #1d3b68 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 16px;
+            color: #f1f5f9;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 680px;
+            margin: auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 22px;
+            background: linear-gradient(145deg, rgba(22, 48, 86, 0.95), rgba(35, 71, 115, 0.95));
+            border: 2px solid #d4af37;
+            border-radius: 16px;
+            padding: 24px 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            font-size: 26px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            letter-spacing: 2px;
+            border: 2px solid #d4af37;
+            padding: 8px 20px;
+            display: inline-block;
+            border-radius: 8px;
+            color: #ffd966;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+        }
+
+        .header p {
+            font-size: 12px;
+            color: #e8d4a8;
+            line-height: 1.6;
+            margin: 12px 0 0 0;
+            border-top: 1px solid rgba(212, 175, 55, 0.35);
+            padding-top: 10px;
+        }
+
+        .protocol-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            background: linear-gradient(145deg, #162c4e 0%, #224270 100%);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 12px;
+            padding: 8px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px 16px;
+            background: rgba(212, 175, 55, 0.1);
+            color: #cbd5e1;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .tab-btn:hover {
+            background: rgba(212, 175, 55, 0.2);
+            border-color: #ffd966;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #d4af37 0%, #f3c642 100%);
+            color: #0d1b2a;
+            border-color: #ffd966;
+            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+        }
+
+        .card {
+            background: linear-gradient(145deg, #162c4e 0%, #224270 100%);
+            border-left: 4px solid #d4af37;
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .input-label {
+            color: #ffd966;
+            font-weight: 700;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .input-description {
+            font-size: 12px;
+            color: #cbd5e1;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .action-row {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-small {
+            background: rgba(212, 175, 55, 0.15);
+            color: #ffd966;
+            border: 1px solid rgba(212, 175, 55, 0.6);
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-small:hover {
+            background: rgba(212, 175, 55, 0.3);
+            border-color: #ffd966;
+        }
+
+        .btn-small.danger {
+            color: #fca5a5;
+            border-color: rgba(239, 68, 68, 0.4);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .btn-small.danger:hover {
+            background: rgba(239, 68, 68, 0.25);
+            border-color: #ef4444;
+        }
+
+        textarea {
+            width: 100%;
+            height: 110px;
+            background: rgba(8, 20, 38, 0.7);
+            border: 1px solid rgba(212, 175, 55, 0.45);
+            border-radius: 8px;
+            padding: 12px;
+            color: #f8fafc;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 12px;
+            resize: vertical;
+            margin-bottom: 14px;
+            transition: all 0.2s ease;
+            word-break: break-all;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #ffd966;
+            background: rgba(8, 20, 38, 0.9);
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
+        }
+
+        textarea::placeholder {
+            color: #64748b;
+        }
+
+        .btn-convert {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #d4af37 0%, #f3c642 100%);
+            color: #0d1b2a;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 14px rgba(212, 175, 55, 0.35);
+        }
+
+        .btn-convert:hover {
+            background: linear-gradient(135deg, #c49f2c 0%, #e5b835 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(212, 175, 55, 0.45);
+        }
+
+        .btn-convert:active {
+            transform: translateY(1px);
+        }
+
+        .status-msg {
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-bottom: 14px;
+            font-size: 12px;
+            font-weight: 600;
+            display: none;
+            text-align: center;
+            animation: fadeIn 0.25s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .status-msg.show {
+            display: block;
+        }
+
+        .status-msg.success {
+            background: rgba(34, 197, 94, 0.15);
+            color: #4ade80;
+            border: 1px solid rgba(74, 222, 128, 0.4);
+        }
+
+        .status-msg.error {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(248, 113, 113, 0.4);
+        }
+
+        .json-output {
+            background: rgba(6, 16, 32, 0.85);
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            border-radius: 8px;
+            padding: 14px;
+            color: #e2e8f0;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 10px;
+            line-height: 1.4;
+            max-height: 260px;
+            overflow-y: auto;
+            margin-bottom: 14px;
+            display: none;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            user-select: text;
+        }
+
+        .json-output.show {
+            display: block;
+        }
+
+        .json-output::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .json-output::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 3px;
+        }
+
+        .json-output::-webkit-scrollbar-thumb {
+            background: #d4af37;
+            border-radius: 3px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 28px 16px;
+            color: #94a3b8;
+            border: 1px dashed rgba(212, 175, 55, 0.3);
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .empty-state p {
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+
+        .btn-actions {
+            display: none;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .btn-actions.show {
+            display: grid;
+        }
+
+        .btn-action {
+            padding: 12px;
+            background: rgba(212, 175, 55, 0.15);
+            border: 1px solid #d4af37;
+            color: #ffd966;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-action:hover {
+            background: rgba(212, 175, 55, 0.28);
+        }
+
+        .btn-action:active {
+            transform: scale(0.98);
+        }
+
+        .info-box {
+            background: rgba(212, 175, 55, 0.08);
+            border-left: 3px solid #d4af37;
+            border-radius: 8px;
+            padding: 14px;
+            margin-top: 16px;
+            font-size: 11px;
+            color: #cbd5e1;
+            line-height: 1.6;
+        }
+
+        .info-box strong {
+            color: #ffd966;
+            display: block;
+            margin-bottom: 6px;
+            font-size: 12px;
+        }
+
+        .protocol-info {
+            background: rgba(212, 175, 55, 0.05);
+            border: 1px dashed rgba(212, 175, 55, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 14px;
+            font-size: 11px;
+            color: #cbd5e1;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 22px;
+                padding: 6px 14px;
+            }
+
+            .protocol-tabs {
+                flex-direction: column;
+                gap: 6px;
+            }
+
+            .tab-btn {
+                padding: 10px;
+                font-size: 12px;
+            }
+
+            .card {
+                padding: 16px;
+            }
+
+            textarea {
+                height: 95px;
+                font-size: 11px;
+            }
+
+            .json-output {
+                max-height: 200px;
+                font-size: 9px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <h1>CASSANOVA</h1>
+            <p>Multi-Protocol URI to JSON Converter<br>VMESS • VLESS • TROJAN Support</p>
+        </div>
+
+        <!-- PROTOCOL TABS -->
+        <div class="protocol-tabs">
+            <button class="tab-btn active" onclick="switchProtocol('vless')">🔵 VLESS</button>
+            <button class="tab-btn" onclick="switchProtocol('vmess')">🟢 VMESS</button>
+            <button class="tab-btn" onclick="switchProtocol('trojan')">🔴 TROJAN</button>
+        </div>
+
+        <!-- INPUT SECTION -->
+        <div class="card">
+            <div class="card-header">
+                <div class="input-label" id="inputLabel">📝 Paste VLESS URI</div>
+                <div class="action-row">
+                    <button class="btn-small" onclick="pasteFromClipboard()">📋 Paste</button>
+                    <button class="btn-small danger" onclick="clearInput()">🗑️ Clear</button>
+                </div>
+            </div>
+            
+            <div class="protocol-info" id="protocolInfo">
+                Format: vless://uuid@host:port?parameters#Remarks
+            </div>
+
+            <div class="input-description" id="inputDescription">
+                Mendukung VLESS WebSocket (WS), TLS/Non-TLS dengan SNI & Path otomatis.
+            </div>
+
+            <textarea id="uriInput" placeholder="vless://uuid@host:port?parameters#Remarks"></textarea>
+
+            <button class="btn-convert" onclick="convertToJson()">🚀 Convert to JSON</button>
+        </div>
+
+        <!-- OUTPUT SECTION -->
+        <div class="card">
+            <div class="input-label" style="margin-bottom: 12px;">✨ Hasil JSON Config</div>
+            
+            <div class="status-msg" id="statusMsg"></div>
+            
+            <div class="empty-state" id="emptyState">
+                <p><strong>JSON config belum dibuat</strong></p>
+                <p style="font-size: 11px; margin-top: 4px;">Tempel URI di atas lalu klik tombol <em>Convert</em></p>
+            </div>
+
+            <pre class="json-output" id="jsonOutput"></pre>
+
+            <div class="btn-actions" id="btnActions">
+                <button class="btn-action" onclick="copyToClipboard()">📋 Copy JSON</button>
+                <button class="btn-action" onclick="downloadJson()">⬇️ Download .json</button>
+            </div>
+
+            <div class="info-box">
+                <strong>💡 Panduan Penggunaan:</strong>
+                1️⃣ Pilih protocol (VLESS/VMESS/TROJAN)<br>
+                2️⃣ Paste URI sesuai protocol<br>
+                3️⃣ Klik <strong>Convert to JSON</strong><br>
+                4️⃣ Copy atau Download file JSON<br>
+                5️⃣ Import ke v2rayNG
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentProtocol = 'vless';
+        let currentJson = null;
+
+        const protocolConfigs = {
+            vless: {
+                label: '🔵 VLESS URI',
+                placeholder: 'vless://uuid@host:port?path=%2F&security=tls&encryption=none&host=example.com&type=ws&sni=example.com#Remarks',
+                description: 'Mendukung VLESS WebSocket (WS), TLS/Non-TLS dengan SNI & Path otomatis.',
+                info: 'Format: vless://uuid@host:port?parameters#Remarks'
+            },
+            vmess: {
+                label: '🟢 VMESS URI',
+                placeholder: 'vmess://base64encodedconfig',
+                description: 'Paste VMESS URI (base64 encoded configuration string).',
+                info: 'Format: vmess://base64(json) atau gunakan VMESS URI export'
+            },
+            trojan: {
+                label: '🔴 TROJAN URI',
+                placeholder: 'trojan://password@host:port?security=tls&sni=example.com#Remarks',
+                description: 'Paste TROJAN URI dengan password, host, dan port.',
+                info: 'Format: trojan://password@host:port?parameters#Remarks'
+            }
+        };
+
+        function switchProtocol(protocol) {
+            currentProtocol = protocol;
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            const config = protocolConfigs[protocol];
+            document.getElementById('inputLabel').textContent = config.label;
+            document.getElementById('inputDescription').textContent = config.description;
+            document.getElementById('protocolInfo').textContent = config.info;
+            document.getElementById('uriInput').placeholder = config.placeholder;
+            document.getElementById('uriInput').value = '';
+            document.getElementById('jsonOutput').classList.remove('show');
+            document.getElementById('emptyState').style.display = 'block';
+            document.getElementById('btnActions').classList.remove('show');
+            currentJson = null;
+        }
+
+        function showStatus(msg, type) {
+            const statusEl = document.getElementById('statusMsg');
+            statusEl.textContent = msg;
+            statusEl.className = 'status-msg show ' + type;
+            setTimeout(() => {
+                statusEl.classList.remove('show');
+            }, 3000);
+        }
+
+        function parseVlessUri(uri) {
+            try {
+                const vlessRegex = /^vless:\/\/([a-f0-9-]+)@([\w.-]+):(\d+)\?(.*)#(.*)$/i;
+                const match = uri.match(vlessRegex);
+                
+                if (!match) {
+                    throw new Error('Format VLESS tidak valid');
+                }
+
+                const [, uuid, address, port, params, remarks] = match;
+                const paramObj = new URLSearchParams(params);
+
+                return {
+                    protocol: 'vless',
+                    uuid: uuid.trim(),
+                    address: address.trim(),
+                    port: parseInt(port),
+                    type: paramObj.get('type') || 'ws',
+                    security: paramObj.get('security') || 'none',
+                    path: paramObj.get('path') || '/',
+                    host: paramObj.get('host') || address,
+                    sni: paramObj.get('sni') || paramObj.get('host') || address,
+                    encryption: 'none',
+                    remarks: decodeURIComponent(remarks.trim())
+                };
+            } catch (err) {
+                throw new Error('Error parsing VLESS: ' + err.message);
+            }
+        }
+
+        function parseVmessUri(uri) {
+            try {
+                if (uri.startsWith('vmess://')) {
+                    const base64 = uri.substring(8);
+                    const decoded = atob(base64);
+                    const config = JSON.parse(decoded);
+                    
+                    return {
+                        protocol: 'vmess',
+                        uuid: config.id || config.uuid || '',
+                        address: config.add || config.address || '',
+                        port: config.port || 443,
+                        type: config.net || 'ws',
+                        security: config.tls || 'none',
+                        path: config.path || '/',
+                        host: config.host || config.add || '',
+                        sni: config.sni || config.host || '',
+                        encryption: 'none',
+                        remarks: config.ps || 'VMESS Config'
+                    };
+                }
+                throw new Error('Format VMESS harus berupa base64 encoded URI');
+            } catch (err) {
+                throw new Error('Error parsing VMESS: ' + err.message);
+            }
+        }
+
+        function parseTrojanUri(uri) {
+            try {
+                const trojanRegex = /^trojan:\/\/([^@]+)@([\w.-]+):(\d+)\?(.*)#(.*)$/i;
+                const match = uri.match(trojanRegex);
+                
+                if (!match) {
+                    throw new Error('Format TROJAN tidak valid');
+                }
+
+                const [, password, address, port, params, remarks] = match;
+                const paramObj = new URLSearchParams(params);
+
+                return {
+                    protocol: 'trojan',
+                    password: password.trim(),
+                    address: address.trim(),
+                    port: parseInt(port),
+                    type: 'tcp',
+                    security: paramObj.get('security') || 'tls',
+                    path: paramObj.get('path') || '/',
+                    host: paramObj.get('host') || address,
+                    sni: paramObj.get('sni') || paramObj.get('host') || address,
+                    encryption: 'none',
+                    remarks: decodeURIComponent(remarks.trim())
+                };
+            } catch (err) {
+                throw new Error('Error parsing TROJAN: ' + err.message);
+            }
+        }
+
+        function generateComprehensiveJson(params) {
+            const streamSettings = {
+                network: params.type,
+                security: params.security,
+                sockopt: {
+                    tcpFastOpen: true,
+                    keepAliveInterval: 20,
+                    tfo: 256,
+                    dialerProxy: ""
+                }
+            };
+
+            if (params.security === 'tls') {
+                streamSettings.tlsSettings = {
+                    serverName: params.sni,
+                    allowInsecure: false,
+                    alpn: ["h2", "http/1.1"],
+                    enableSessionResumption: true,
+                    fingerprint: "chrome",
+                    minVersion: "1.2"
+                };
+            }
+
+            if (params.type === 'ws') {
+                streamSettings.wsSettings = {
+                    path: params.path,
+                    headers: {
+                        Host: params.host,
+                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                    },
+                    maxEachConn: 100
+                };
+            }
+
+            const outbound = {
+                tag: "proxy",
+                protocol: params.protocol
+            };
+
+            if (params.protocol === 'vless') {
+                outbound.settings = {
+                    vnext: [{
+                        address: params.address,
+                        port: params.port,
+                        users: [{
+                            id: params.uuid,
+                            encryption: params.encryption,
+                            flow: "",
+                            level: 8
+                        }]
+                    }]
+                };
+            } else if (params.protocol === 'vmess') {
+                outbound.settings = {
+                    vnext: [{
+                        address: params.address,
+                        port: params.port,
+                        users: [{
+                            id: params.uuid,
+                            alterId: 0,
+                            security: "auto",
+                            level: 8
+                        }]
+                    }]
+                };
+            } else if (params.protocol === 'trojan') {
+                outbound.settings = {
+                    servers: [{
+                        address: params.address,
+                        port: params.port,
+                        password: params.password,
+                        level: 8
+                    }]
+                };
+            }
+
+            outbound.streamSettings = streamSettings;
+            outbound.mux = {
+                enabled: true,
+                concurrency: 8,
+                xudpConcurrency: 20,
+                xudpProxyUDP443: "reject"
+            };
+
+            return {
+                dns: {
+                    hosts: {
+                        "domain:googleapis.cn": "googleapis.com",
+                        "domain:gstatic.com": "googleapis.com"
+                    },
+                    servers: [
+                        "1.1.1.1",
+                        "8.8.8.8",
+                        "223.5.5.5",
+                        "1.0.0.1",
+                        "8.8.4.4"
+                    ],
+                    clientIp: "1.2.3.4"
+                },
+                inbounds: [
+                    {
+                        listen: "127.0.0.1",
+                        port: 10808,
+                        protocol: "socks",
+                        settings: {
+                            auth: "noauth",
+                            udp: true,
+                            userLevel: 8
+                        },
+                        sniffing: {
+                            destOverride: ["http", "tls"],
+                            enabled: true,
+                            routeOnly: false
+                        },
+                        streamSettings: {
+                            sockopt: {
+                                tcpFastOpen: true,
+                                keepAliveInterval: 20
+                            }
+                        },
+                        tag: "socks"
+                    },
+                    {
+                        listen: "127.0.0.1",
+                        port: 10809,
+                        protocol: "http",
+                        settings: {
+                            timeout: 360,
+                            allowTransparent: false
+                        },
+                        streamSettings: {
+                            sockopt: {
+                                tcpFastOpen: true,
+                                keepAliveInterval: 20
+                            }
+                        },
+                        tag: "http"
+                    }
+                ],
+                log: {
+                    loglevel: "warning",
+                    access: ""
+                },
+                outbounds: [
+                    outbound,
+                    {
+                        protocol: "freedom",
+                        settings: {
+                            domainStrategy: "UseIP",
+                            redirect: ""
+                        },
+                        streamSettings: {
+                            sockopt: {
+                                tcpFastOpen: true,
+                                keepAliveInterval: 20
+                            }
+                        },
+                        tag: "direct"
+                    },
+                    {
+                        protocol: "blackhole",
+                        settings: {
+                            response: {
+                                type: "http"
+                            }
+                        },
+                        tag: "block"
+                    }
+                ],
+                routing: {
+                    domainStrategy: "IPIfNonMatch",
+                    domainMatcher: "hybrid",
+                    rules: [
+                        {
+                            type: "field",
+                            domain: ["geosite:private"],
+                            outboundTag: "direct"
+                        },
+                        {
+                            type: "field",
+                            ip: ["geoip:private"],
+                            outboundTag: "direct"
+                        },
+                        {
+                            type: "field",
+                            domain: ["geosite:cn"],
+                            outboundTag: "direct"
+                        },
+                        {
+                            type: "field",
+                            ip: ["geoip:cn"],
+                            outboundTag: "direct"
+                        },
+                        {
+                            type: "field",
+                            protocol: ["bittorrent"],
+                            outboundTag: "block"
+                        }
+                    ]
+                },
+                stats: {},
+                remarks: params.remarks
+            };
+        }
+
+        function convertToJson() {
+            try {
+                const input = document.getElementById('uriInput').value.trim();
+                if (!input) {
+                    throw new Error('Kolom input kosong. Silakan paste URI terlebih dahulu.');
+                }
+
+                let params;
+                if (currentProtocol === 'vless') {
+                    params = parseVlessUri(input);
+                } else if (currentProtocol === 'vmess') {
+                    params = parseVmessUri(input);
+                } else if (currentProtocol === 'trojan') {
+                    params = parseTrojanUri(input);
+                }
+
+                currentJson = generateComprehensiveJson(params);
+                
+                const outputEl = document.getElementById('jsonOutput');
+                outputEl.textContent = JSON.stringify(currentJson, null, 2);
+                outputEl.classList.add('show');
+                
+                document.getElementById('emptyState').style.display = 'none';
+                document.getElementById('btnActions').classList.add('show');
+                
+                showStatus(`✅ Konversi ${currentProtocol.toUpperCase()} berhasil!`, 'success');
+            } catch (err) {
+                showStatus('❌ ' + err.message, 'error');
+                document.getElementById('jsonOutput').classList.remove('show');
+                document.getElementById('emptyState').style.display = 'block';
+                document.getElementById('btnActions').classList.remove('show');
+            }
+        }
+
+        function clearInput() {
+            const input = document.getElementById('uriInput');
+            if (input.value.trim() === '') {
+                showStatus('⚠️ Kolom input sudah kosong', 'error');
+                return;
+            }
+            input.value = '';
+            document.getElementById('jsonOutput').classList.remove('show');
+            document.getElementById('emptyState').style.display = 'block';
+            document.getElementById('btnActions').classList.remove('show');
+            currentJson = null;
+            showStatus('🗑️ URI dihapus', 'success');
+            input.focus();
+        }
+
+        async function pasteFromClipboard() {
+            try {
+                if (navigator.clipboard && navigator.clipboard.readText) {
+                    const text = await navigator.clipboard.readText();
+                    if (text && text.trim()) {
+                        document.getElementById('uriInput').value = text.trim();
+                        showStatus('✅ Teks berhasil ditempel dari Clipboard', 'success');
+                        convertToJson();
+                        return;
+                    }
+                }
+                throw new Error('Akses clipboard dibatasi');
+            } catch (err) {
+                showStatus('⚠️ Silakan paste secara manual (Ctrl+V)', 'error');
+                document.getElementById('uriInput').focus();
+            }
+        }
+
+        function copyToClipboard() {
+            if (!currentJson) {
+                showStatus('⚠️ Belum ada konfigurasi JSON untuk disalin', 'error');
+                return;
+            }
+
+            const jsonText = JSON.stringify(currentJson, null, 2);
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = jsonText;
+            tempTextArea.style.position = 'fixed';
+            tempTextArea.style.left = '-999999px';
+            tempTextArea.style.top = '-999999px';
+            document.body.appendChild(tempTextArea);
+            tempTextArea.focus();
+            tempTextArea.select();
+
+            try {
+                const successful = document.execCommand('copy');
+                document.body.removeChild(tempTextArea);
+                if (successful) {
+                    showStatus('📋 JSON berhasil disalin!', 'success');
+                } else {
+                    throw new Error('execCommand copy gagal');
+                }
+            } catch (err) {
+                document.body.removeChild(tempTextArea);
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(jsonText)
+                        .then(() => showStatus('📋 JSON berhasil disalin!', 'success'))
+                        .catch(() => showStatus('❌ Gagal menyalin ke clipboard', 'error'));
+                } else {
+                    showStatus('❌ Gagal menyalin secara otomatis', 'error');
+                }
+            }
+        }
+
+        function downloadJson() {
+            if (!currentJson) {
+                showStatus('⚠️ Belum ada JSON untuk diunduh', 'error');
+                return;
+            }
+
+            try {
+                const jsonText = JSON.stringify(currentJson, null, 2);
+                const blob = new Blob([jsonText], { type: 'application/json;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                
+                let safeName = (currentJson.remarks || currentProtocol)
+                    .replace(/[^a-zA-Z0-9_\-]/g, '_')
+                    .toLowerCase();
+                
+                a.href = url;
+                a.download = `${safeName || 'config'}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                showStatus(`⬇️ Berhasil mengunduh ${a.download}`, 'success');
+            } catch (err) {
+                showStatus('❌ Gagal mengunduh file JSON: ' + err.message, 'error');
+            }
+        }
+    </script>
+</body>
+</html>
