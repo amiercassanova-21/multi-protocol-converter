@@ -17,7 +17,7 @@
 
 </div>
 
-## 📌 Tentang CASSANOVA
+## 📌 Tentang JSON Converter
 
 **CASSANOVA Universal Protocol to JSON Converter** adalah platform web generasi baru yang dirancang untuk mengurai (*parse*) dan mengonversi link akun VPN berbasis protokol **VLESS**, **VMess**, dan **Trojan** secara otomatis menjadi struktur kode **JSON Xray/V2Ray Core**.
 
